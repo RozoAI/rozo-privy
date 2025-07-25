@@ -11,13 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CopyIcon } from "./icons/copy";
 import { Button } from "./ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { CardDescription, CardHeader, CardTitle } from "./ui/card";
 import {
   Sheet,
   SheetContent,
@@ -35,7 +29,6 @@ export default function UserDetail() {
 
   const { createWallet } = useCreateWallet();
   const [isCreating, setIsCreating] = useState(false);
-  const [copied, setCopied] = useState(false);
   const { resolvedTheme } = useTheme();
 
   const stellarEmbeddedWallets = useMemo<WalletWithMetadata[]>(
@@ -86,32 +79,18 @@ export default function UserDetail() {
     isCreating,
   ]);
 
-  if (!ready || (authenticated && !user)) {
-    return (
-      <Card className="w-fit">
-        <CardHeader>
-          <CardTitle>Loading</CardTitle>
-          <CardDescription>
-            Loading user details. Please wait...
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
+  const isLoading =
+    !ready ||
+    (authenticated && !user) ||
+    isCreating ||
+    (user && stellarEmbeddedWallets.length === 0);
 
-  if (isCreating || (user && stellarEmbeddedWallets.length === 0)) {
+  if (isLoading) {
     return (
-      <Card className="w-fit">
-        <CardHeader>
-          <CardTitle>Wallet Creation</CardTitle>
-          <CardDescription>
-            We are creating a Stellar wallet for you.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>Please wait...</p>
-        </CardContent>
-      </Card>
+      <CardHeader>
+        <CardTitle>Loading</CardTitle>
+        <CardDescription>Loading user details. Please wait...</CardDescription>
+      </CardHeader>
     );
   }
 
