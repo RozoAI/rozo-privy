@@ -1,5 +1,6 @@
 "use client";
 
+import useGetStellarBalance from "@/hooks/useGetStellarBalance";
 import { formatAddress } from "@/lib/utils";
 import { usePrivy, useUser, WalletWithMetadata } from "@privy-io/react-auth";
 import { useCreateWallet } from "@privy-io/react-auth/extended-chains";
@@ -24,7 +25,7 @@ import {
 export default function UserDetail() {
   const { user, refreshUser } = useUser();
   const router = useRouter();
-  console.log(user);
+
   const { ready, authenticated, logout } = usePrivy();
 
   const { createWallet } = useCreateWallet();
@@ -78,6 +79,12 @@ export default function UserDetail() {
     handleCreateWallet,
     isCreating,
   ]);
+  const stellarAddress = stellarEmbeddedWallets[0]?.address;
+  const {
+    balance: stellarBalance,
+    loading: stellarBalanceLoading,
+    error: stellarBalanceError,
+  } = useGetStellarBalance(stellarAddress, "XLM");
 
   const isLoading =
     !ready ||
@@ -179,6 +186,20 @@ export default function UserDetail() {
               </div>
             </SheetContent>
           </Sheet>
+        </div>
+        <div>
+          <p className="text-sm font-medium">Stellar Balance</p>
+          {stellarBalanceLoading && (
+            <p className="text-sm text-muted-foreground">Loading balance...</p>
+          )}
+          {stellarBalanceError && (
+            <p className="text-sm text-destructive">Error fetching balance</p>
+          )}
+          {stellarBalance && (
+            <p className="text-sm text-muted-foreground">
+              {stellarBalance} XLM
+            </p>
+          )}
         </div>
       </div>
     </div>
