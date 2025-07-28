@@ -4,6 +4,7 @@ import useGetStellarBalance from "@/hooks/useGetStellarBalance";
 import { formatAddress } from "@/lib/utils";
 import { usePrivy, useUser, WalletWithMetadata } from "@privy-io/react-auth";
 import { useCreateWallet } from "@privy-io/react-auth/extended-chains";
+import { RefreshCcw } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -84,6 +85,7 @@ export default function UserDetail() {
     balance: stellarBalance,
     loading: stellarBalanceLoading,
     error: stellarBalanceError,
+    refetch: refetchStellarBalance,
   } = useGetStellarBalance(stellarAddress, "XLM");
 
   const isLoading =
@@ -189,17 +191,27 @@ export default function UserDetail() {
         </div>
         <div>
           <p className="text-sm font-medium">Stellar Balance</p>
-          {stellarBalanceLoading && (
-            <p className="text-sm text-muted-foreground">Loading balance...</p>
-          )}
-          {stellarBalanceError && (
-            <p className="text-sm text-destructive">Error fetching balance</p>
-          )}
-          {stellarBalance && (
-            <p className="text-sm text-muted-foreground">
-              {stellarBalance} XLM
-            </p>
-          )}
+          <div className="flex items-center gap-2">
+            {stellarBalanceLoading ? (
+              <p className="text-sm text-muted-foreground">
+                Loading balance...
+              </p>
+            ) : stellarBalanceError ? (
+              <p className="text-sm text-destructive">Error fetching balance</p>
+            ) : stellarBalance ? (
+              <p className="text-sm text-muted-foreground">
+                {stellarBalance} XLM
+              </p>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => refetchStellarBalance()}
+              disabled={stellarBalanceLoading}
+            >
+              <RefreshCcw />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
