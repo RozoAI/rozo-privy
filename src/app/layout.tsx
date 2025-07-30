@@ -3,6 +3,7 @@ import Footer from "@/components/footer";
 import IntercomInitializer from "@/components/intercom";
 import { Toaster } from "@/components/ui/sonner";
 import PrivyProvider from "@/providers/privy.provider";
+import { StellarProvider } from "@/providers/stellar.provider";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -40,7 +41,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <main className="flex min-h-screen flex-col justify-between gap-4 md:min-h-screen md:items-center md:justify-center py-4">
-            <PrivyProvider>{children}</PrivyProvider>
+            <PrivyProvider>
+              <StellarProvider>{children}</StellarProvider>
+            </PrivyProvider>
             <Toaster position="top-center" />
             <IntercomInitializer
               appId={process.env.INTERCOM_APP_ID as string}

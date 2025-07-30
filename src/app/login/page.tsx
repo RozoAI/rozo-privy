@@ -14,7 +14,7 @@ export default async function Login() {
     try {
       await client.verifyAuthToken(cookieAuthToken.value);
       redirect("/");
-    } catch {}
+    } catch { }
   }
 
   return (
