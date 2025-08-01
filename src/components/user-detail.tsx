@@ -34,6 +34,8 @@ export default function UserDetail() {
   const { isRefreshing, handleRefresh } = useStellarRefresh();
   const { needsActivation } = useStellarActivation(account, publicKey);
 
+  console.log({ stellarEmbeddedWallets, user, needsActivation });
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -51,7 +53,7 @@ export default function UserDetail() {
         />
       )}
 
-      {needsActivation && stellarEmbeddedWallets.length > 0 && (
+      {user && needsActivation && stellarEmbeddedWallets.length > 0 && (
         <WalletActivationAlert
           stellarAddress={stellarEmbeddedWallets[0]?.address}
         />

@@ -1,12 +1,27 @@
 import type { Horizon } from "@stellar/stellar-sdk";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function useStellarActivation(
   account: Horizon.AccountResponse | undefined,
   publicKey: string | undefined
 ) {
+  const [isAccountLoading, setIsAccountLoading] = useState(false);
+
+  useEffect(() => {
+    if (publicKey && !account) {
+      setIsAccountLoading(true);
+    } else {
+      setIsAccountLoading(false);
+    }
+  }, [publicKey, account]);
+
   const needsActivation = useMemo(() => {
-    // If we have a public key but no account data, the wallet needs activation
+    // Don't show activation needed while account is loading
+    if (isAccountLoading) {
+      return false;
+    }
+
+    // If we have a public key but no account data (and not loading), the wallet needs activation
     if (publicKey && !account) {
       return true;
     }
@@ -27,7 +42,7 @@ export function useStellarActivation(
     }
 
     return false;
-  }, [account, publicKey]);
+  }, [account, publicKey, isAccountLoading]);
 
   return {
     needsActivation,

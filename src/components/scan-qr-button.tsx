@@ -28,7 +28,7 @@ export default function ScanQRButton() {
       setSheetOpen(false);
       transactionDetailRef.current?.open(data);
     } else {
-      toast.error("Invalid deeplink");
+      toast.error("Only Base Chain is supported");
     }
 
     toast.success("QR code scanned successfully!");

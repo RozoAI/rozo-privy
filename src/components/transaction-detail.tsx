@@ -68,7 +68,12 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
     open: (data: DeeplinkData) => {
       setParsedData(data);
       setIsOpen(true);
-      setAmount("");
+
+      if (isBlockchainData(data) && data.amount !== undefined) {
+        setAmount(String(parseFloat(String(data.amount || "0"))));
+      } else {
+        setAmount("");
+      }
     },
     close: () => {
       setIsOpen(false);
@@ -76,9 +81,8 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
       setAmount("");
     },
   }));
-
   const handleAmountSubmit = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!amount || parseFloat(String(amount || "0")) <= 0) {
       toast.error("Please enter a valid amount");
       return;
     }
@@ -155,6 +159,8 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
   };
 
   if (!parsedData) return null;
+
+  console.log({ parsedData });
 
   return (
     <Sheet open={isOpen} onOpenChange={() => {}} modal>
@@ -246,7 +252,9 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
                 Network
               </label>
               <div className="p-3 bg-gray-50 rounded-lg text-sm">
-                {getChainName(Number(parsedData.chain_id))}
+                {getChainName(
+                  Number(parsedData.chain_id || String(baseUSDC.chainId))
+                )}
               </div>
             </div>
           )}

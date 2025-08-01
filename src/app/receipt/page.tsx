@@ -7,6 +7,9 @@ import { getPaymentData } from "@/lib/payment-api";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+// Force dynamic rendering since we use searchParams
+export const dynamic = "force-dynamic";
+
 interface ReceiptPageProps {
   searchParams: Promise<{ id?: string }>;
 }
