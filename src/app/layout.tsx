@@ -4,10 +4,13 @@ import IntercomInitializer from "@/components/intercom";
 import { Toaster } from "@/components/ui/sonner";
 import PrivyProvider from "@/providers/privy.provider";
 import { StellarProvider } from "@/providers/stellar.provider";
+import dotenv from "dotenv";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+dotenv.config();
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

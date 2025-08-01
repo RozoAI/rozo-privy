@@ -1,6 +1,6 @@
 "use client";
 
-import { parseDeeplink, type DeeplinkData } from "@rozoai/deeplink-core";
+import { type DeeplinkData } from "@rozoai/deeplink-core";
 import { ScanQr } from "@rozoai/deeplink-react";
 import { QrCode } from "lucide-react";
 import { useRef, useState } from "react";
@@ -18,31 +18,10 @@ import {
 } from "./ui/sheet";
 
 export default function ScanQRButton() {
-  const [inputValue, setInputValue] = useState("");
   const [isSheetOpen, setSheetOpen] = useState(false);
   const transactionDetailRef = useRef<TransactionDetailRef>(null);
 
-  const handleParse = () => {
-    if (!inputValue) {
-      toast.error("Input value cannot be empty.");
-      return;
-    }
-    try {
-      const data = parseDeeplink(inputValue);
-
-      if (data.type === "address" || data.type === "ethereum") {
-        setSheetOpen(false);
-        transactionDetailRef.current?.open(data);
-      } else {
-        toast.error("Invalid deeplink");
-      }
-    } catch (err) {
-      toast.error((err as Error).message);
-    }
-  };
-
   const handleScanSuccess = (data: DeeplinkData) => {
-    setInputValue("");
     setSheetOpen(false);
 
     if (data.type === "address" || data.type === "ethereum") {
@@ -66,6 +45,7 @@ export default function ScanQRButton() {
         <SheetTrigger asChild>
           <Button variant="secondary">
             <QrCode className="w-5 h-5" />
+            Transfer
           </Button>
         </SheetTrigger>
         <SheetContent side="bottom">
