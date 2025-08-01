@@ -37,8 +37,8 @@ export function useStellarTrustline() {
       );
       const xlmBalance = nativeBalance ? parseFloat(nativeBalance.balance) : 0;
 
-      if (xlmBalance < 1.5) {
-        setBalanceInfo({ current: xlmBalance, required: 1.5 });
+      if (xlmBalance < 2) {
+        setBalanceInfo({ current: xlmBalance, required: 2 });
         setShowInsufficientBalanceDialog(true);
         return;
       }

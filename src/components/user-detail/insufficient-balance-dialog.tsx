@@ -49,6 +49,9 @@ export const InsufficientBalanceDialog = memo(
                     requirement
                   </li>
                   <li>
+                    • <strong>0.5 XLM</strong> - Trustline to USDC
+                  </li>
+                  <li>
                     • <strong>0.5 XLM</strong> - Buffer for transaction fees and
                     trustline reserve
                   </li>
