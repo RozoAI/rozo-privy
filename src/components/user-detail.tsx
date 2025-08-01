@@ -5,6 +5,7 @@ import { useStellarBalances } from "@/hooks/use-stellar-balances";
 import { useStellarRefresh } from "@/hooks/use-stellar-refresh";
 import { useStellarTrustline } from "@/hooks/use-stellar-trustline";
 import { useStellarWallet } from "@/hooks/use-stellar-wallet";
+import ScanQRButton from "./scan-qr-button";
 import { InsufficientBalanceDialog } from "./user-detail/insufficient-balance-dialog";
 import { LoadingState } from "./user-detail/loading-state";
 import { StellarAddress } from "./user-detail/stellar-address";
@@ -28,7 +29,7 @@ export default function UserDetail() {
     enableUsdc,
     showInsufficientBalanceDialog,
     setShowInsufficientBalanceDialog,
-    balanceInfo
+    balanceInfo,
   } = useStellarTrustline();
   const { isRefreshing, handleRefresh } = useStellarRefresh();
   const { needsActivation } = useStellarActivation(account, publicKey);
@@ -66,6 +67,8 @@ export default function UserDetail() {
           onRefresh={handleRefresh}
         />
       )}
+
+      <ScanQRButton />
 
       <InsufficientBalanceDialog
         open={showInsufficientBalanceDialog}
