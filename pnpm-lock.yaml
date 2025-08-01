@@ -39,8 +39,8 @@ importers:
         specifier: 1.0.8
         version: 1.0.8(@yudiel/react-qr-scanner@2.3.1(@types/emscripten@1.40.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@rozoai/intent-common':
-        specifier: 0.0.16-beta.20
-        version: 0.0.16-beta.20(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: 0.0.16-beta.21
+        version: 0.0.16-beta.21(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@stellar/stellar-sdk':
         specifier: ^13.3.0
         version: 13.3.0
@@ -1623,8 +1623,8 @@ packages:
       react: '>=18'
       react-dom: '>=18'
 
-  '@rozoai/intent-common@0.0.16-beta.20':
-    resolution: {integrity: sha512-phfQ4yF7qJ6LhpDLyYZ09d1d8fQoFXQ85+iXU2y23wZoqB+oWu7UZAJw36LchMyHYssI3Vz/ih7A6atwy7rnTA==}
+  '@rozoai/intent-common@0.0.16-beta.21':
+    resolution: {integrity: sha512-e4RK3BhjTJw6mTzh9IzukOBOk/jvBWpWkAdXj6SkvIXvvlv968GsGpZH9Q8GsC7KrHMp31JnaXjG5KM1K1OKrQ==}
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
@@ -8226,7 +8226,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@rozoai/intent-common@0.0.16-beta.20(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@rozoai/intent-common@0.0.16-beta.21(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@scure/base': 1.2.6
       viem: 2.32.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
