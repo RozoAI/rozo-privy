@@ -46,7 +46,6 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
     }
 
     const result = await getPaymentData(id);
-    console.log(result);
 
     if (!result.success || !result.payment) {
       return redirect("/error");

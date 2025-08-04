@@ -7,7 +7,13 @@ import { PaymentPayload } from "@/lib/payment-api";
 import { type DeeplinkData } from "@rozoai/deeplink-core";
 import { getChainName } from "@rozoai/intent-common";
 import { useRouter } from "next/navigation";
-import { forwardRef, useImperativeHandle, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import { toast } from "sonner";
 import { baseUSDC } from "../lib/constants";
 import { Button } from "./ui/button";
@@ -23,6 +29,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
   const router = useRouter();
 
   const [amount, setAmount] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [parsedData, setParsedData] = useState<DeeplinkData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -45,6 +52,39 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
 
   // Use USDC decimals from constants
   const USDC_DECIMALS = baseUSDC.decimals;
+
+  // Debounce the input value to amount
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setAmount(inputValue);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeout);
+  }, [inputValue]);
+
+  // Validate and clean input value
+  const handleInputChange = useCallback((value: string) => {
+    // Replace commas with dots
+    let cleanedValue = value.replace(/,/g, ".");
+
+    // Only allow numbers and single dot
+    cleanedValue = cleanedValue.replace(/[^0-9.]/g, "");
+
+    // Ensure only one dot
+    const dotCount = (cleanedValue.match(/\./g) || []).length;
+    if (dotCount > 1) {
+      const parts = cleanedValue.split(".");
+      cleanedValue = parts[0] + "." + parts.slice(1).join("");
+    }
+
+    // Limit to 6 decimal places for USDC
+    const dotIndex = cleanedValue.indexOf(".");
+    if (dotIndex !== -1 && cleanedValue.length > dotIndex + 7) {
+      cleanedValue = cleanedValue.substring(0, dotIndex + 7);
+    }
+
+    setInputValue(cleanedValue);
+  }, []);
 
   // Format USDC amount (6 decimals)
   const formatUsdcAmount = (rawAmount: string): string => {
@@ -70,15 +110,19 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
       setIsOpen(true);
 
       if (isBlockchainData(data) && data.amount !== undefined) {
-        setAmount(String(parseFloat(String(data.amount || "0"))));
+        const amountValue = String(parseFloat(String(data.amount || "0")));
+        setAmount(amountValue);
+        setInputValue(amountValue);
       } else {
         setAmount("");
+        setInputValue("");
       }
     },
     close: () => {
       setIsOpen(false);
       setParsedData(null);
       setAmount("");
+      setInputValue("");
     },
   }));
   const handleAmountSubmit = async () => {
@@ -154,13 +198,12 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
 
   const handleCancel = () => {
     setAmount("");
+    setInputValue("");
     setIsOpen(false);
     setParsedData(null);
   };
 
   if (!parsedData) return null;
-
-  console.log({ parsedData });
 
   return (
     <Sheet open={isOpen} onOpenChange={() => {}} modal>
@@ -184,7 +227,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
               <label className="text-sm font-medium text-gray-700">
                 Recipient Address
               </label>
-              <div className="p-3 bg-gray-50 rounded-lg break-all text-sm">
+              <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:text-white   rounded-lg break-all text-sm">
                 {parsedData.address}
               </div>
             </div>
@@ -196,7 +239,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
               <label className="text-sm font-medium text-gray-700">
                 Amount
               </label>
-              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+              <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm">
                 {getDisplayAmount()} {baseUSDC.symbol}
               </div>
             </div>
@@ -210,7 +253,9 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    setAmount(String(parseFloat(String(usdcBalance || "0"))))
+                    setInputValue(
+                      String(parseFloat(String(usdcBalance || "0")))
+                    )
                   }
                   className="px-2 py-1 text-xs"
                   disabled={
@@ -221,13 +266,11 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
                 </Button>
               </div>
               <Input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                type="text"
+                inputMode="decimal"
+                value={inputValue}
+                onChange={(e) => handleInputChange(e.target.value)}
                 placeholder="0.00"
-                step="0.000001"
-                min="0"
-                max={String(usdcBalance || "0")}
               />
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Token: {baseUSDC.symbol}</span>
@@ -251,7 +294,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
               <label className="text-sm font-medium text-gray-700">
                 Network
               </label>
-              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+              <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm">
                 {getChainName(
                   Number(parsedData.chain_id || String(baseUSDC.chainId))
                 )}

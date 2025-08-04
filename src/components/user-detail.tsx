@@ -34,8 +34,6 @@ export default function UserDetail() {
   const { isRefreshing, handleRefresh } = useStellarRefresh();
   const { needsActivation } = useStellarActivation(account, publicKey);
 
-  console.log({ stellarEmbeddedWallets, user, needsActivation });
-
   if (isLoading) {
     return <LoadingState />;
   }

@@ -28,7 +28,7 @@ export default function ScanQRButton() {
       setSheetOpen(false);
       transactionDetailRef.current?.open(data);
     } else {
-      toast.error("Only Base Chain is supported");
+      toast.error("Only EVM Chain is supported");
     }
 
     toast.success("QR code scanned successfully!");
@@ -43,7 +43,7 @@ export default function ScanQRButton() {
     <>
       <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
         <SheetTrigger asChild>
-          <Button variant="secondary">
+          <Button>
             <QrCode className="w-5 h-5" />
             Transfer
           </Button>
