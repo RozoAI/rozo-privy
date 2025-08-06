@@ -32,7 +32,10 @@ export default function UserDetail() {
     balanceInfo,
   } = useStellarTrustline();
   const { isRefreshing, handleRefresh } = useStellarRefresh();
-  const { needsActivation } = useStellarActivation(account, publicKey);
+  const { needsActivation, isAccountLoading } = useStellarActivation(
+    account,
+    publicKey
+  );
 
   if (isLoading) {
     return <LoadingState />;
@@ -57,6 +60,12 @@ export default function UserDetail() {
         />
       )}
 
+      {isAccountLoading && (
+        <p className="text-sm font-medium text-muted-foreground">
+          Loading account balances...
+        </p>
+      )}
+
       {account?.balances && !needsActivation && (
         <StellarBalances
           balances={formattedBalances}
@@ -68,7 +77,9 @@ export default function UserDetail() {
         />
       )}
 
-      <ScanQRButton />
+      <ScanQRButton
+        disabled={!account?.balances || needsActivation || isAccountLoading}
+      />
 
       <InsufficientBalanceDialog
         open={showInsufficientBalanceDialog}

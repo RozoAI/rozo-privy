@@ -6,7 +6,9 @@ import { usePrivy, useUser } from "@privy-io/react-auth";
 import { useSignRawHash } from "@privy-io/react-auth/extended-chains";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { Networks, Transaction } from "@stellar/stellar-sdk";
-import { toast } from "sonner";
+import { useState } from "react";
+
+type TransferStep = "create-payment" | "submit-transaction" | "success";
 
 export const useStellarTransfer = () => {
   const { publicKey, account, server } = useStellar();
@@ -15,16 +17,18 @@ export const useStellarTransfer = () => {
 
   const { ready, authenticated } = usePrivy();
 
+  const [step, setStep] = useState<TransferStep>("create-payment");
+
   const transfer = async (
     payload: PaymentPayload
   ): Promise<{ hash: string; payment: RozoPayOrderView } | undefined> => {
-    // Check authentication state before proceeding
     if (!ready || !authenticated || !publicKey) {
       throw new Error("Please ensure you are logged in and try again");
     }
 
     try {
       if (account && publicKey && server) {
+        setStep("create-payment");
         const response = await fetch("/api/create-payment", {
           method: "POST",
           headers: {
@@ -58,7 +62,7 @@ export const useStellarTransfer = () => {
               ),
             },
           };
-
+          setStep("submit-transaction");
           const transactionXdr = await StellarPayNow(stellarPayParams);
 
           const transaction = new Transaction(transactionXdr, Networks.PUBLIC);
@@ -89,9 +93,9 @@ export const useStellarTransfer = () => {
                 // Try to refresh user state first
                 try {
                   await refreshUser();
-                  toast.error("Authentication expired. Please try again.");
+                  throw new Error("Authentication expired. Please try again.");
                 } catch {
-                  toast.error(
+                  throw new Error(
                     "Authentication expired. Please refresh the page and log in again."
                   );
                 }
@@ -104,7 +108,7 @@ export const useStellarTransfer = () => {
                 const result = await server.submitTransaction(transaction);
 
                 if (result.successful && paymentResponse.payment) {
-                  toast.success("Transaction successful!");
+                  setStep("success");
                   return {
                     hash: result.hash,
                     payment: paymentResponse.payment,
@@ -132,5 +136,6 @@ export const useStellarTransfer = () => {
 
   return {
     transfer,
+    step,
   };
 };

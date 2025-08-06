@@ -1,8 +1,8 @@
-import { useTheme } from "next-themes";
-import { memo, useCallback } from "react";
-import { QRCodeSVG } from "qrcode.react";
-import { toast } from "sonner";
 import { formatAddress } from "@/lib/utils";
+import { useTheme } from "next-themes";
+import { QRCodeSVG } from "qrcode.react";
+import { memo, useCallback } from "react";
+import { toast } from "sonner";
 import { CopyIcon } from "../icons/copy";
 import { Button } from "../ui/button";
 import {
@@ -19,9 +19,9 @@ interface StellarAddressProps {
   stellarAddress?: string;
 }
 
-export const StellarAddress = memo(function StellarAddress({ 
-  publicKey, 
-  stellarAddress 
+export const StellarAddress = memo(function StellarAddress({
+  publicKey,
+  stellarAddress,
 }: StellarAddressProps) {
   const { resolvedTheme } = useTheme();
 
@@ -34,7 +34,7 @@ export const StellarAddress = memo(function StellarAddress({
   if (!publicKey) return null;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <p className="text-sm font-medium">Stellar Address</p>
       <Sheet>
         <div className="flex items-center gap-2">

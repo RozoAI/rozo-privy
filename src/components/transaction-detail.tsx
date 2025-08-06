@@ -33,8 +33,9 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [parsedData, setParsedData] = useState<DeeplinkData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [toastId, setToastId] = useState<string | number | null>(null);
 
-  const { transfer } = useStellarTransfer();
+  const { transfer, step } = useStellarTransfer();
   const { account } = useStellarWallet();
   const { usdcBalance } = useStellarBalances(account);
 
@@ -42,7 +43,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
   const isBlockchainData = (
     data: DeeplinkData
   ): data is Exclude<DeeplinkData, { type: "website" }> => {
-    return data.type !== "website";
+    return data.type === "address" || data.type === "ethereum";
   };
 
   const hasAmount =
@@ -50,27 +51,34 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
       ? parsedData.amount !== undefined
       : false;
 
-  // Use USDC decimals from constants
-  const USDC_DECIMALS = baseUSDC.decimals;
-
-  // Debounce the input value to amount
   useEffect(() => {
     const timeout = setTimeout(() => {
       setAmount(inputValue);
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => clearTimeout(timeout);
   }, [inputValue]);
 
+  useEffect(() => {
+    if (toastId) {
+      if (step === "create-payment") {
+        toast.loading("Creating payment...", { id: toastId });
+      } else if (step === "submit-transaction") {
+        toast.loading("Submitting transaction...", { id: toastId });
+      } else if (step === "success") {
+        toast.success("Transaction successful!", { id: toastId });
+      } else {
+        toast.error("Transaction failed", { id: toastId });
+      }
+    }
+  }, [step, toastId]);
+
   // Validate and clean input value
   const handleInputChange = useCallback((value: string) => {
-    // Replace commas with dots
     let cleanedValue = value.replace(/,/g, ".");
 
-    // Only allow numbers and single dot
     cleanedValue = cleanedValue.replace(/[^0-9.]/g, "");
 
-    // Ensure only one dot
     const dotCount = (cleanedValue.match(/\./g) || []).length;
     if (dotCount > 1) {
       const parts = cleanedValue.split(".");
@@ -90,10 +98,10 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
   const formatUsdcAmount = (rawAmount: string): string => {
     if (!rawAmount) return "0";
 
-    const amount = parseFloat(rawAmount) / Math.pow(10, USDC_DECIMALS);
+    const amount = parseFloat(rawAmount) / Math.pow(10, baseUSDC.decimals);
 
     // Format with up to 6 decimal places, removing trailing zeros
-    return amount.toFixed(USDC_DECIMALS).replace(/\.?0+$/, "");
+    return amount.toFixed(baseUSDC.decimals).replace(/\.?0+$/, "");
   };
 
   const getDisplayAmount = (): string => {
@@ -125,6 +133,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
       setInputValue("");
     },
   }));
+
   const handleAmountSubmit = async () => {
     if (!amount || parseFloat(String(amount || "0")) <= 0) {
       toast.error("Please enter a valid amount");
@@ -144,7 +153,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
       return;
     }
 
-    const toastId = toast.loading("Processing transaction...");
+    setToastId(toast.loading("Processing transaction..."));
 
     setIsProcessing(true);
     try {
@@ -179,14 +188,13 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
         const result = await transfer(payload);
         if (result) {
           const { payment } = result;
-          toast.success("Transaction successful", { id: toastId });
           router.push(`/receipt?id=${payment.id}`);
-        } else {
-          toast.error("Transaction failed", { id: toastId });
         }
       }
     } catch (error) {
-      toast.error("Failed to create payment", { id: toastId });
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create payment"
+      );
     } finally {
       setIsProcessing(false);
     }
