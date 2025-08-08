@@ -1,4 +1,5 @@
 import BoxedCard from "@/components/boxed-card";
+import MiniKitClient from "@/components/minikit-client";
 import { CardContent } from "@/components/ui/card";
 import UserDetail from "@/components/user-detail";
 import { createPrivyClient } from "@/lib/privy";
@@ -24,6 +25,7 @@ export default async function Home() {
     <BoxedCard className="flex-1">
       <CardContent className="m-auto w-full">
         <UserDetail />
+        <MiniKitClient />
       </CardContent>
     </BoxedCard>
   );
