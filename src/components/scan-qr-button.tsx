@@ -17,7 +17,7 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 
-export default function ScanQRButton() {
+export default function ScanQRButton({ disabled }: { disabled: boolean }) {
   const [isSheetOpen, setSheetOpen] = useState(false);
   const transactionDetailRef = useRef<TransactionDetailRef>(null);
 
@@ -43,7 +43,7 @@ export default function ScanQRButton() {
     <>
       <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
         <SheetTrigger asChild>
-          <Button>
+          <Button disabled={disabled} className="w-full" size="lg">
             <QrCode className="w-5 h-5" />
             Transfer
           </Button>
@@ -56,6 +56,7 @@ export default function ScanQRButton() {
             <ScanQr
               onScan={handleScanSuccess}
               onError={handleScanError}
+              sound={false}
               components={{
                 finder: false,
               }}

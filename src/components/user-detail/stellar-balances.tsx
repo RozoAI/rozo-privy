@@ -1,8 +1,8 @@
-import { memo } from "react";
 import type { FormattedBalance } from "@/lib/stellar/utils";
+import { memo } from "react";
 import { BalanceItem } from "./balance-item";
-import { UsdcEnableButton } from "./usdc-enable-button";
 import { RefreshBalanceButton } from "./refresh-balance-button";
+import { UsdcEnableButton } from "./usdc-enable-button";
 
 interface StellarBalancesProps {
   balances: FormattedBalance[];
@@ -22,7 +22,7 @@ export const StellarBalances = memo(function StellarBalances({
   onRefresh,
 }: StellarBalancesProps) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium">Stellar Balances</p>
         <RefreshBalanceButton

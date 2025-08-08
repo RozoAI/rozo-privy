@@ -46,5 +46,6 @@ export function useStellarActivation(
 
   return {
     needsActivation,
+    isAccountLoading,
   };
 }

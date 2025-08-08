@@ -1,5 +1,5 @@
 {
-  "name": "rozo-pay",
+  "name": "rozo-privy",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prepare": "lefthook install",
-    "test:deeplink": "vitest run lib/deeplink/*/**.test.ts"
+    "prepare": "lefthook install"
   },
   "dependencies": {
     "@privy-io/react-auth": "^2.21.0",
@@ -21,7 +20,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@rozoai/deeplink-core": "1.0.9",
     "@rozoai/deeplink-react": "1.0.9",
-    "@rozoai/intent-common": "0.0.16-beta.21",
+    "@rozoai/intent-common": "0.0.17",
     "@stellar/stellar-sdk": "^13.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

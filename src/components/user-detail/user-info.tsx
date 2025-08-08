@@ -1,7 +1,7 @@
+import type { User } from "@privy-io/react-auth";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import { memo, type ReactNode } from "react";
-import type { User } from "@privy-io/react-auth";
 import { Button } from "../ui/button";
 
 interface UserInfoProps {
@@ -10,7 +10,11 @@ interface UserInfoProps {
   children?: ReactNode;
 }
 
-export const UserInfo = memo(function UserInfo({ user, onLogout, children }: UserInfoProps) {
+export const UserInfo = memo(function UserInfo({
+  user,
+  onLogout,
+  children,
+}: UserInfoProps) {
   const { resolvedTheme } = useTheme();
 
   return (
@@ -28,9 +32,9 @@ export const UserInfo = memo(function UserInfo({ user, onLogout, children }: Use
           priority
         />
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex flex-col gap-1">
             <p className="text-sm font-medium">Email</p>
             <p className="break-all text-sm text-muted-foreground">
               {user?.email?.address}
