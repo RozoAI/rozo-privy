@@ -1,4 +1,5 @@
 import BoxedCard from "@/components/boxed-card";
+import MiniKitClient from "@/components/minikit-client";
 import { SignInButton } from "@/components/sign-in-button";
 import { CardContent } from "@/components/ui/card";
 import { createPrivyClient } from "@/lib/privy";
@@ -14,13 +15,14 @@ export default async function Login() {
     try {
       await client.verifyAuthToken(cookieAuthToken.value);
       redirect("/");
-    } catch { }
+    } catch {}
   }
 
   return (
     <BoxedCard className="flex-1">
       <CardContent className="m-auto w-full">
         <SignInButton />
+        <MiniKitClient />
       </CardContent>
     </BoxedCard>
   );
