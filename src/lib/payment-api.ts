@@ -25,8 +25,8 @@ export interface PaymentPayload {
   metadata: {
     daimoOrderId: string;
     intent: string;
-    items: [];
-    payer: object;
+    items?: any[];
+    payer?: object;
   };
   preferredChain: string;
   preferredToken: string;

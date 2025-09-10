@@ -5,7 +5,7 @@ import { useStellarTransfer } from "@/hooks/use-stellar-transfer";
 import { useStellarWallet } from "@/hooks/use-stellar-wallet";
 import { PaymentPayload } from "@/lib/payment-api";
 import { type DeeplinkData } from "@rozoai/deeplink-core";
-import { getChainName, rozoStellar } from "@rozoai/intent-common";
+import { getChainName, rozoStellarUSDC } from "@rozoai/intent-common";
 import { useRouter } from "next/navigation";
 import {
   forwardRef,
@@ -159,30 +159,26 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
     try {
       if (parsedData && parsedData.type === "ethereum") {
         const payload: PaymentPayload = {
-          appId: "rozoInvoiceStellar",
-          display: {
-            intent: "Pay",
-            paymentValue: amount,
-            currency: "USD",
-          },
-          preferredChain: String(rozoStellar.chainId),
-          preferredToken: "USDC",
+          appId: "rozoPrivy",
+          display: { intent: "Pay", paymentValue: amount, currency: "USD" },
           destination: {
             destinationAddress: parsedData.address ?? "",
             chainId: String(baseUSDC.chainId),
             amountUnits: hasAmount
               ? String(parseFloat(String(amount || "0")))
               : amount,
-            tokenSymbol: baseUSDC.symbol,
-            tokenAddress: parsedData.asset?.contract ?? "",
+            tokenSymbol: "USDC",
+            tokenAddress: parsedData.asset?.contract ?? baseUSDC.token ?? "",
           },
           externalId: "",
           metadata: {
-            daimoOrderId: "",
+            daimoOrderId: "0r2r0xvg7flb",
             intent: "Pay",
             items: [],
             payer: {},
           },
+          preferredChain: String(rozoStellarUSDC.chainId),
+          preferredToken: "USDC",
         };
 
         const result = await transfer(payload);
