@@ -56,7 +56,7 @@ export const useStellarTransfer = () => {
             },
             order: {
               address:
-                paymentResponse.payment?.destination.destinationAddress ?? "",
+                paymentResponse.payment?.metadata?.receivingAddress ?? "",
               pay_amount: Number(
                 paymentResponse.payment?.destination.amountUnits ?? 0
               ),

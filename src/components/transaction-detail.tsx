@@ -5,7 +5,7 @@ import { useStellarTransfer } from "@/hooks/use-stellar-transfer";
 import { useStellarWallet } from "@/hooks/use-stellar-wallet";
 import { PaymentPayload } from "@/lib/payment-api";
 import { type DeeplinkData } from "@rozoai/deeplink-core";
-import { getChainName } from "@rozoai/intent-common";
+import { getChainName, rozoStellar } from "@rozoai/intent-common";
 import { useRouter } from "next/navigation";
 import {
   forwardRef,
@@ -165,6 +165,8 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
             paymentValue: amount,
             currency: "USD",
           },
+          preferredChain: String(rozoStellar.chainId),
+          preferredToken: "USDC",
           destination: {
             destinationAddress: parsedData.address ?? "",
             chainId: String(baseUSDC.chainId),
@@ -181,14 +183,18 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
             items: [],
             payer: {},
           },
-          preferredChain: "10001",
-          preferredToken: "USDC_XLM",
         };
 
         const result = await transfer(payload);
         if (result) {
           const { payment } = result;
-          router.push(`/receipt?id=${payment.id}`);
+          // router.push(`/receipt?id=${payment.id}`);
+          setTimeout(() => {
+            window.open(
+              `https://invoice.rozo.ai/receipt?id=${payment.id}`,
+              "_blank"
+            );
+          }, 1000);
         }
       }
     } catch (error) {
