@@ -3,22 +3,36 @@
 import { PageHeader } from "@/components/page-header";
 import { ContactSupport } from "@/components/ui/contact-support";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useStellarTransfer } from "@/hooks/use-stellar-transfer";
 import {
   convertToUSD,
   EXCHANGE_RATES,
   getDisplayCurrency,
   getFirstTwoWordInitialsFromName,
 } from "@/lib/utils";
+import { useStellar } from "@/providers/stellar.provider";
 import { Restaurant } from "@/types/restaurant";
+import { baseUSDC, rozoStellarUSDC } from "@rozoai/intent-common";
 import { BadgePercent, CreditCard, MapPin, Share } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 export default function RestaurantDetailPage() {
   const params = useParams();
@@ -30,6 +44,7 @@ export default function RestaurantDetailPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = React.useState(false);
   const [paymentAmount, setPaymentAmount] = React.useState<string>("");
+  const [usdAmount, setUsdAmount] = React.useState<string>("");
   const [points, setPoints] = React.useState(0);
   const [pointsLoading, setPointsLoading] = React.useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
@@ -37,13 +52,10 @@ export default function RestaurantDetailPage() {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastResetAmountRef = useRef<string>("");
   const [appId, setAppId] = React.useState<string>("");
-
-  const metadata = useMemo(() => {
-    return {
-      amount_local: paymentAmount,
-      currency_local: getDisplayCurrency(restaurant?.currency),
-    };
-  }, [paymentAmount, restaurant?.currency]);
+  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [toastId, setToastId] = React.useState<string | number | null>(null);
+  const { usdcBalance } = useStellar();
+  const { transfer } = useStellarTransfer();
 
   useEffect(() => {
     async function loadRestaurant() {
@@ -71,6 +83,7 @@ export default function RestaurantDetailPage() {
 
         const displayCurrency = foundRestaurant.currency || "USD";
         const usdAmount = convertToUSD(price.toFixed(2), displayCurrency);
+        setUsdAmount(usdAmount);
 
         const appId = `rozoRewardsBNBStellarMP-${foundRestaurant.handle || ""}`;
         setAppId(appId);
@@ -125,17 +138,13 @@ export default function RestaurantDetailPage() {
     debounceTimerRef.current = setTimeout(() => {
       const displayCurrency = getDisplayCurrency(restaurant.currency);
       const usdAmount = convertToUSD(value, displayCurrency);
-
+      setUsdAmount(usdAmount);
       const appId = `rozoRewardsBNBStellarMP-${restaurant.handle || ""}`;
       setAppId(appId);
 
       setIsDebouncing(false);
       debounceTimerRef.current = null;
     }, 500);
-  };
-
-  const handlePayWithPoints = () => {
-    setShowConfirmDialog(true);
   };
 
   const handleShare = () => {
@@ -159,6 +168,88 @@ export default function RestaurantDetailPage() {
         console.error(`Error sharing: ${err}`);
       }
     })();
+  };
+
+  const handlePayment = () => {
+    if (!restaurant || Number(paymentAmount) <= 0) {
+      toast.error("Please enter a valid payment amount");
+      return;
+    }
+
+    if (Number(paymentAmount) > Number(usdcBalance)) {
+      toast.error("Insufficient balance");
+      return;
+    }
+
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!restaurant) return;
+
+    const idToast = toast.loading("Processing payment...");
+    setToastId(idToast);
+    setIsProcessing(true);
+
+    try {
+      const displayCurrency = getDisplayCurrency(restaurant.currency);
+      const usdAmount = convertToUSD(paymentAmount, displayCurrency);
+
+      const payload = {
+        appId: appId,
+        display: {
+          intent: `Pay ${displayCurrency} ${paymentAmount} at ${restaurant.name}`,
+          paymentValue: usdAmount,
+          currency: "USD",
+        },
+        destination: {
+          destinationAddress:
+            process.env.NEXT_PUBLIC_ALLOWED_BASE_ADDRESS || "",
+          chainId: String(baseUSDC.chainId),
+          amountUnits: usdAmount,
+          tokenSymbol: "USDC",
+          tokenAddress: baseUSDC.token,
+        },
+        externalId: "",
+        metadata: {
+          intent: `Pay ${displayCurrency} ${paymentAmount} at ${restaurant.name}`,
+          items: [
+            {
+              name: `Pay ${displayCurrency} ${paymentAmount}`,
+              description: restaurant.name,
+            },
+          ],
+        },
+        preferredChain: String(rozoStellarUSDC.chainId),
+        preferredToken: "USDC",
+      };
+
+      const result = await transfer(payload);
+      if (result) {
+        const { payment } = result;
+        toast.success("Payment successful!");
+        setTimeout(() => {
+          window.open(
+            `https://invoice.rozo.ai/receipt?id=${payment.id}`,
+            "_blank"
+          );
+        }, 1000);
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to process payment"
+      );
+    } finally {
+      setIsProcessing(false);
+      setShowConfirmDialog(false);
+      if (idToast) {
+        toast.dismiss(idToast);
+      }
+    }
+  };
+
+  const handleCancelPayment = () => {
+    setShowConfirmDialog(false);
   };
 
   if (loading) {
@@ -328,13 +419,19 @@ export default function RestaurantDetailPage() {
                   )}
                 </div>
 
-                {paymentAmount && (
-                  <Button variant="default" className="w-full">
-                    <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
-                    Pay {getDisplayCurrency(restaurant?.currency)}{" "}
-                    {paymentAmount}
-                  </Button>
-                )}
+                <Button
+                  variant="default"
+                  className="w-full"
+                  onClick={handlePayment}
+                  disabled={
+                    Number(usdAmount) <= 0 ||
+                    Number(usdAmount) > Number(usdcBalance) ||
+                    isProcessing
+                  }
+                >
+                  <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {isProcessing ? "Processing..." : `Pay ${usdAmount} USD`}
+                </Button>
               </div>
             </div>
           )}
@@ -343,6 +440,46 @@ export default function RestaurantDetailPage() {
           <ContactSupport />
         </CardContent>
       </Card>
+
+      {/* Payment Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Payment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to pay{" "}
+              <span className="font-semibold">
+                {getDisplayCurrency(restaurant?.currency)} {paymentAmount}
+              </span>{" "}
+              to <span className="font-semibold">{restaurant?.name}</span>?
+              {getDisplayCurrency(restaurant?.currency) !== "USD" && (
+                <div className="mt-2 text-sm text-muted-foreground">
+                  Equivalent to: ~$
+                  {convertToUSD(
+                    paymentAmount,
+                    getDisplayCurrency(restaurant?.currency)
+                  )}{" "}
+                  USD
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={handleCancelPayment}
+              disabled={isProcessing}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmPayment}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Processing..." : "Confirm Payment"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

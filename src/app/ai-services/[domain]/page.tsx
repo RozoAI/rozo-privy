@@ -1,12 +1,25 @@
 "use client";
 
 import { PageHeader } from "@/components/page-header";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ContactSupport } from "@/components/ui/contact-support";
+import { useStellarTransfer } from "@/hooks/use-stellar-transfer";
 import { getFirstTwoWordInitialsFromName } from "@/lib/utils";
+import { useStellar } from "@/providers/stellar.provider";
+import { baseUSDC, rozoStellarUSDC } from "@rozoai/intent-common";
 import {
   ArrowLeft,
   Clock,
@@ -18,6 +31,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
+import { toast } from "sonner";
 import data from "../../../../public/ai_commerce_catalog.json";
 
 type CatalogItem = {
@@ -60,7 +74,11 @@ export default function AIServiceDetailPage() {
   const [pointsLoading, setPointsLoading] = React.useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [dialogLoading, setDialogLoading] = React.useState(false);
+  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [toastId, setToastId] = React.useState<string | number | null>(null);
   const [appId, setAppId] = React.useState<string>("");
+  const { usdcBalance } = useStellar();
+  const { transfer } = useStellarTransfer();
 
   useEffect(() => {
     async function loadService() {
@@ -112,6 +130,93 @@ export default function AIServiceDetailPage() {
         console.error(`Error sharing: ${err}`);
       }
     })();
+  };
+
+  const handlePayment = () => {
+    if (!service || service.price_in_usd <= 0) {
+      toast.error("Invalid service or price");
+      return;
+    }
+
+    if (service.sold_out) {
+      toast.error("This service is sold out");
+      return;
+    }
+
+    if (service.price_in_usd > Number(usdcBalance)) {
+      toast.error("Insufficient balance");
+      return;
+    }
+
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!service) return;
+
+    const idToast = toast.loading("Processing payment...");
+    setToastId(idToast);
+    setIsProcessing(true);
+
+    try {
+      const payload = {
+        appId: appId,
+        display: {
+          intent: `Purchase ${service.name} - ${service.duration_months} months`,
+          paymentValue: service.price_in_usd.toString(),
+          currency: "USD",
+        },
+        destination: {
+          destinationAddress:
+            process.env.NEXT_PUBLIC_ALLOWED_BASE_ADDRESS || "",
+          chainId: String(baseUSDC.chainId),
+          amountUnits: service.price_in_usd.toString(),
+          tokenSymbol: "USDC",
+          tokenAddress: baseUSDC.token,
+        },
+        externalId: "",
+        metadata: {
+          intent: `Purchase ${service.name} - ${service.duration_months} months`,
+          items: [
+            {
+              name: service.name,
+              description: service.description,
+              price: service.price_in_usd,
+              duration_months: service.duration_months,
+              category: service.category,
+              domain: service.domain,
+            },
+          ],
+        },
+        preferredChain: String(rozoStellarUSDC.chainId),
+        preferredToken: "USDC",
+      };
+
+      const result = await transfer(payload);
+      if (result) {
+        const { payment } = result;
+        toast.success("Payment successful!");
+        setTimeout(() => {
+          window.open(
+            `https://invoice.rozo.ai/receipt?id=${payment.id}`,
+            "_blank"
+          );
+        }, 1000);
+      }
+    } catch (error) {
+      toast.dismiss(idToast);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to process payment"
+      );
+    } finally {
+      setIsProcessing(false);
+      setShowConfirmDialog(false);
+      toast.dismiss(idToast);
+    }
+  };
+
+  const handleCancelPayment = () => {
+    setShowConfirmDialog(false);
   };
 
   if (loading) {
@@ -307,9 +412,14 @@ export default function AIServiceDetailPage() {
             <Button
               className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold"
               size={"lg"}
-              disabled={paymentLoading}
+              onClick={handlePayment}
+              disabled={
+                isProcessing ||
+                service?.sold_out ||
+                (service?.price_in_usd || 0) > Number(usdcBalance)
+              }
             >
-              {paymentLoading ? (
+              {isProcessing ? (
                 <>
                   <Wallet className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse" />
                   Processing Payment...
@@ -334,6 +444,46 @@ export default function AIServiceDetailPage() {
           <ContactSupport />
         </CardContent>
       </Card>
+
+      {/* Payment Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Purchase</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to purchase{" "}
+              <span className="font-semibold">{service?.name}</span> for{" "}
+              <span className="font-semibold">${service?.price_in_usd}</span>?
+              {service?.duration_months && service.duration_months > 0 && (
+                <div className="mt-2 text-sm text-muted-foreground">
+                  Duration: {service.duration_months} months
+                </div>
+              )}
+              {service?.original_value_usd &&
+                service.original_value_usd > service.price_in_usd && (
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    Original price: ${service.original_value_usd} (
+                    {service.discount_rate}% off)
+                  </div>
+                )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={handleCancelPayment}
+              disabled={isProcessing}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmPayment}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Processing..." : "Confirm Purchase"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -23,7 +23,7 @@ export interface PaymentPayload {
   };
   externalId: string;
   metadata: {
-    daimoOrderId: string;
+    daimoOrderId?: string;
     intent: string;
     items?: any[];
     payer?: object;

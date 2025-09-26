@@ -22,6 +22,13 @@ export const useStellarTransfer = () => {
   const transfer = async (
     payload: PaymentPayload
   ): Promise<{ hash: string; payment: RozoPayOrderView } | undefined> => {
+    console.log("payload", payload);
+    console.log("publicKey", publicKey);
+    console.log("account", account);
+    console.log("server", server);
+    console.log("ready", ready);
+    console.log("authenticated", authenticated);
+
     if (!ready || !authenticated || !publicKey) {
       throw new Error("Please ensure you are logged in and try again");
     }

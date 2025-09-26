@@ -48,8 +48,8 @@ export function BottomNavbar() {
             className={cn(
               "flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-all duration-200 min-w-0 flex-1",
               isActive(href)
-                ? "text-primary font-semibold scale-105"
-                : "text-muted-foreground hover:text-foreground hover:scale-105"
+                ? "text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Icon className="h-5 w-5" />
