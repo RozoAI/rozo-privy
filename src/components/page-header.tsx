@@ -9,10 +9,12 @@ export function PageHeader({
   title,
   icon,
   isBackButton,
+  action,
 }: {
   title: string;
   icon?: React.ReactNode;
   isBackButton?: boolean;
+  action?: React.ReactNode;
 }) {
   const router = useRouter();
 
@@ -37,6 +39,7 @@ export function PageHeader({
         {icon}
         <h1 className="text-lg sm:text-2xl font-bold">{title}</h1>
       </div>
+      {action}
     </div>
   );
 }

@@ -7,13 +7,7 @@ import {
   TransactionBuilder,
 } from "@stellar/stellar-sdk";
 
-export const StellarPayNow = async ({
-  account,
-  publicKey,
-  token,
-  order,
-  server,
-}: {
+interface StellarPayParams {
   account: Horizon.AccountResponse;
   publicKey: string;
   token: {
@@ -26,7 +20,17 @@ export const StellarPayNow = async ({
     salt?: string;
   };
   server: Horizon.Server;
-}): Promise<string> => {
+  type?: "usdc" | "xlm";
+}
+
+export const StellarPayNow = async ({
+  account,
+  publicKey,
+  token,
+  order,
+  server,
+  type = "usdc",
+}: StellarPayParams): Promise<string> => {
   try {
     if (account && publicKey) {
       const amount = order?.pay_amount ?? 0;

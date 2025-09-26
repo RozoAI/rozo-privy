@@ -34,15 +34,15 @@ function ListRow({ item }: { item: CatalogItem }) {
   // Check if this is an external link (Rozo Banana)
   const isExternalLink = item.domain === "banana.rozo.ai";
   const linkHref = isExternalLink
-    ? item.source
+    ? `/banana`
     : `/ai-services/${encodeURIComponent(item.domain)}`;
 
   return (
     <li>
       <Link
         href={linkHref}
-        target={isExternalLink ? "_blank" : undefined}
-        rel={isExternalLink ? "noopener noreferrer" : undefined}
+        // target={isExternalLink ? "_blank" : undefined}
+        // rel={isExternalLink ? "noopener noreferrer" : undefined}
         className="block px-3 py-4 sm:px-4 sm:py-5 border-b last:border-b-0 hover:bg-accent/50 active:bg-accent/70 transition-colors duration-200 group"
       >
         <div className="flex items-start gap-3 sm:gap-4">
