@@ -1,23 +1,24 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { HelpCircleIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
 /**
  * Floating Action Button with theme switcher and support actions
  */
-export function FabActions() {
+export function FabActions({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
 
   // Action button styles
   const actionButtonStyle = {
-    base: "flex h-9 items-center justify-center p-2 transition-colors w-9 cursor-pointer",
+    base: "flex h-9 items-center justify-center p-2 transition-colors w-9 cursor-pointer bg-background",
     hover: "hover:bg-accent",
   };
 
   return (
-    <div className="fixed right-6 bottom-6 z-50">
-      <div className="flex flex-col overflow-hidden rounded-md border bg-background shadow-xs dark:border-input dark:bg-input/30">
+    <div className={cn("fixed right-6 bottom-6 z-[50] ", className)}>
+      <div className="flex flex-col overflow-hidden rounded-md border bg-accent shadow-xs dark:border-input dark:bg-input/30 h-full">
         {/* Theme Switcher Button */}
         <button
           type="button"
@@ -37,7 +38,7 @@ export function FabActions() {
         </button>
 
         {/* Divider */}
-        <div className="border-t dark:border-input" />
+        {/* <div className="border-t dark:border-input" /> */}
 
         {/* Support Button */}
         <button

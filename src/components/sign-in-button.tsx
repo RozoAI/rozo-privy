@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export function SignInButton() {
   const router = useRouter();
   const { login } = useLogin({
-    onComplete: () => router.push("/"),
+    onComplete: () => router.push("/profile"),
   });
 
   return (

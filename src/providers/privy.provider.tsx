@@ -31,7 +31,9 @@ export default function PrivyProvider({
           logo,
         },
         embeddedWallets: {
-          createOnLogin: "off",
+          ethereum: {
+            createOnLogin: "off",
+          },
         },
       }}
     >

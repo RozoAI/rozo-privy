@@ -1,5 +1,4 @@
-import { FabActions } from "@/components/fab-actions";
-import Footer from "@/components/footer";
+import { BottomNavbar } from "@/components/bottom-navbar";
 import IntercomInitializer from "@/components/intercom";
 import { Toaster } from "@/components/ui/sonner";
 import PrivyProvider from "@/providers/privy.provider";
@@ -43,7 +42,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <main className="flex min-h-screen flex-col justify-between gap-4 md:min-h-screen md:items-center md:justify-center py-4">
+          <main className="flex min-h-screen flex-col justify-between gap-4 md:min-h-screen md:items-center md:justify-center">
             <PrivyProvider>
               <StellarProvider>{children}</StellarProvider>
             </PrivyProvider>
@@ -51,8 +50,9 @@ export default function RootLayout({
             <IntercomInitializer
               appId={process.env.INTERCOM_APP_ID as string}
             />
-            <FabActions />
-            <Footer />
+            {/* <FabActions /> */}
+            {/* <Footer /> */}
+            <BottomNavbar />
           </main>
         </ThemeProvider>
       </body>

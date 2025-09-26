@@ -122,6 +122,6 @@
 
   html,
   body {
-    @apply min-h-screen;
+    @apply min-h-screen max-w-xl mx-auto;
   }
 }
