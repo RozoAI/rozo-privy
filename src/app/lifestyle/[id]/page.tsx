@@ -224,7 +224,10 @@ export default function RestaurantDetailPage() {
         preferredToken: "USDC",
       };
 
-      const result = await transfer(payload);
+      const result = await transfer({
+        bridge: true,
+        payload,
+      });
       if (result) {
         const { payment } = result;
         toast.success("Payment successful!");

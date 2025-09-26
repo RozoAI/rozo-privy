@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { usePrivy, useUser, type WalletWithMetadata } from "@privy-io/react-auth";
-import { useCreateWallet } from "@privy-io/react-auth/extended-chains";
 import { useStellar } from "@/providers/stellar.provider";
+import {
+  usePrivy,
+  useUser,
+  type WalletWithMetadata,
+} from "@privy-io/react-auth";
+import { useCreateWallet } from "@privy-io/react-auth/extended-chains";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function useStellarWallet() {
   const { user, refreshUser } = useUser();
@@ -10,6 +14,8 @@ export function useStellarWallet() {
   const { ready, authenticated, logout } = usePrivy();
   const { createWallet } = useCreateWallet();
   const { setPublicKey, publicKey, account } = useStellar();
+
+  const [isAuthenticated, setIsAuthenticated] = useState(authenticated);
   const [isCreating, setIsCreating] = useState(false);
 
   const stellarEmbeddedWallets = useMemo<WalletWithMetadata[]>(
@@ -47,8 +53,8 @@ export function useStellarWallet() {
 
   // Redirect to home if not authenticated
   useEffect(() => {
-    if (ready && !authenticated) {
-      router.push("/");
+    if (ready) {
+      setIsAuthenticated(authenticated);
     }
   }, [ready, authenticated, router]);
 
@@ -81,6 +87,7 @@ export function useStellarWallet() {
     account,
     stellarEmbeddedWallets,
     isLoading,
+    isAuthenticated,
     handleLogout,
   };
 }

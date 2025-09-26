@@ -213,7 +213,10 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
           preferredToken: "USDC",
         };
 
-        const result = await transfer(payload);
+        const result = await transfer({
+          bridge: true,
+          payload,
+        });
         if (result) {
           const { payment } = result;
           setTimeout(() => {
