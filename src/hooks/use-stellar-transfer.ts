@@ -60,6 +60,7 @@ export const useStellarTransfer = () => {
               pay_amount: Number(
                 paymentResponse.payment?.destination.amountUnits ?? 0
               ),
+              salt: paymentResponse.payment?.metadata?.memo ?? "",
             },
           };
           setStep("submit-transaction");
