@@ -2,6 +2,12 @@ import { AiServicesContent } from "@/components/ai-services/ai-services-content"
 import { FabActions } from "@/components/fab-actions";
 import { PageHeader } from "@/components/page-header";
 import { Binoculars } from "lucide-react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "AI Services - Rozo AI",
+  description: "Discover AI services",
+};
 
 export default function AiServicesPage() {
   return (

@@ -86,7 +86,7 @@ const TransformationSelector: React.FC<TransformationSelectorProps> = ({
                 <div className="text-5xl md:text-6xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
                   {transformation.emoji}
                 </div>
-                <h3 className="font-semibold text-gray-200 group-hover:text-orange-400 transition-colors text-lg md:text-xl text-center">
+                <h3 className="font-semibold text-gray-200 transition-colors text-lg md:text-xl text-center">
                   {transformation.title}
                 </h3>
                 <p className="text-xs text-muted mt-3 text-center px-2">

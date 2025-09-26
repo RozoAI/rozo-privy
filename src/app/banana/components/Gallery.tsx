@@ -1,6 +1,16 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Download } from "lucide-react";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import { downloadImage } from "../utils/fileUtils";
 
 interface GalleryProps {
   isOpen: boolean;
@@ -8,52 +18,66 @@ interface GalleryProps {
   onSelectImage: (imageUrl: string) => void;
 }
 
-const Gallery: React.FC<GalleryProps> = ({ isOpen, onClose, onSelectImage }) => {
+const Gallery: React.FC<GalleryProps> = ({
+  isOpen,
+  onClose,
+  onSelectImage,
+}) => {
   const [history, setHistory] = useState<string[]>([]);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      const savedHistory = localStorage.getItem('bananaHistory');
+      const savedHistory = localStorage.getItem("bananaHistory");
       if (savedHistory) {
         try {
           setHistory(JSON.parse(savedHistory));
         } catch (e) {
-          console.error('Failed to load history:', e);
+          console.error("Failed to load history:", e);
         }
       }
     }
   }, [isOpen]);
 
   const handleClearHistory = () => {
-    localStorage.removeItem('bananaHistory');
+    localStorage.removeItem("bananaHistory");
     setHistory([]);
   };
 
-  if (!isOpen) return null;
+  const handleImageClick = (imageUrl: string) => {
+    setPreviewImageUrl(imageUrl);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewImageUrl(null);
+  };
+
+  const handleUseAsInput = (imageUrl: string) => {
+    onSelectImage(imageUrl);
+    setPreviewImageUrl(null);
+    onClose();
+  };
+
+  const handleDownload = (imageUrl: string) => {
+    const fileExtension = imageUrl.split(";")[0].split("/")[1] || "png";
+    downloadImage(imageUrl, `gallery-image-${Date.now()}.${fileExtension}`);
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in-fast">
-      <div className="bg-gray-900 rounded-lg w-full max-w-6xl max-h-[90vh] flex flex-col">
-        <div className="p-6 border-b border-white/10 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-orange-500">Gallery</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="w-full max-w-6xl flex flex-col">
+        <DialogHeader className="border-b border-white/10 pb-4">
+          <DialogTitle className="text-xl font-semibold">Gallery</DialogTitle>
+        </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto py-4">
           {history.length > 0 ? (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {history.map((imageUrl, index) => (
                   <div
                     key={index}
-                    onClick={() => onSelectImage(imageUrl)}
+                    onClick={() => handleImageClick(imageUrl)}
                     className="relative group cursor-pointer rounded-lg overflow-hidden bg-gray-800 aspect-square"
                   >
                     <img
@@ -62,7 +86,20 @@ const Gallery: React.FC<GalleryProps> = ({ isOpen, onClose, onSelectImage }) => 
                       className="w-full h-full object-cover transition-transform group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">Use This</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-8 w-8 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                        />
+                      </svg>
                     </div>
                   </div>
                 ))}
@@ -76,16 +113,61 @@ const Gallery: React.FC<GalleryProps> = ({ isOpen, onClose, onSelectImage }) => 
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-12 w-12 mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
               <p>No images in gallery yet</p>
               <p className="text-sm mt-2">Generated images will appear here</p>
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+
+      {/* Preview Dialog */}
+      <Dialog
+        open={!!previewImageUrl}
+        onOpenChange={() => setPreviewImageUrl(null)}
+      >
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-6">
+          <div className="flex flex-col items-center gap-4">
+            {previewImageUrl && (
+              <>
+                <Image
+                  width={500}
+                  height={500}
+                  src={previewImageUrl}
+                  alt="Preview"
+                  className="max-w-full max-h-[70vh] rounded-lg border object-contain"
+                />
+
+                {/* Action buttons */}
+                <div className="flex gap-3 w-full max-w-sm">
+                  <Button
+                    onClick={() => handleDownload(previewImageUrl)}
+                    variant="secondary"
+                    className="flex-1"
+                  >
+                    <Download className="size-4" />
+                    Download
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </Dialog>
   );
 };
 

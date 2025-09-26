@@ -337,7 +337,7 @@ export default function BananaPage() {
         if (stepTwoResult.imageUrl) {
           stepTwoResult.imageUrl = await embedWatermark(
             stepTwoResult.imageUrl,
-            "ROZO Bananary"
+            "ROZO Banana"
           );
         }
 
@@ -370,7 +370,7 @@ export default function BananaPage() {
         if (result.imageUrl) {
           result.imageUrl = await embedWatermark(
             result.imageUrl,
-            "ROZO Bananary"
+            "ROZO Banana"
           );
         }
 
@@ -473,7 +473,7 @@ export default function BananaPage() {
   return (
     <div className="w-full mb-14 flex flex-col gap-4 mt-4 relative">
       <PageHeader
-        title="Rozo Bananary"
+        title="Rozo Banana"
         icon="🍌"
         action={
           <Button onClick={toggleGallery}>
@@ -603,7 +603,7 @@ export default function BananaPage() {
                         >
                           {isProcessing && paymentType === "usdc"
                             ? "Processing..."
-                            : "Pay 0.1 USDC"}
+                            : "Pay 0.1 USD"}
                         </Button>
                         <span className="text-primary/65 text-sm">or</span>
                         <Button
@@ -726,7 +726,7 @@ export default function BananaPage() {
             <AlertDialogDescription>
               Are you sure you want to pay{" "}
               <span className="font-semibold">
-                {paymentType === "usdc" ? "0.1 USDC" : "0.25 XLM"}
+                {paymentType === "usdc" ? "0.1 USD" : "0.25 XLM"}
               </span>{" "}
               for AI Image Generation?
               <div className="mt-2 text-sm text-muted-foreground">
