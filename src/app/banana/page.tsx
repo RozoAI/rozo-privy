@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useStellarTransfer } from "@/hooks/use-stellar-transfer";
 import { useStellarWallet } from "@/hooks/use-stellar-wallet";
 import { ArrowLeft, Image, Pencil, Sparkles, WandSparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import ErrorMessage from "./components/ErrorMessage";
 import Gallery from "./components/Gallery";
@@ -92,7 +93,7 @@ export default function BananaPage() {
       return TRANSFORMATIONS;
     }
   );
-
+  const router = useRouter();
   const [selectedTransformation, setSelectedTransformation] =
     useState<Transformation | null>(null);
   const [primaryImageUrl, setPrimaryImageUrl] = useState<string | null>(null);
@@ -115,7 +116,7 @@ export default function BananaPage() {
   const { transfer } = useStellarTransfer();
 
   // Initialize Stellar wallet to ensure publicKey is set
-  useStellarWallet();
+  const { isAuthenticated } = useStellarWallet();
   const [maskDataUrl, setMaskDataUrl] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [customPrompt, setCustomPrompt] = useState<string>("");
@@ -578,7 +579,18 @@ export default function BananaPage() {
                   )} */}
 
                   <div className="flex gap-3 mt-6">
-                    {!isStellarMode && (
+                    {!isAuthenticated && (
+                      <div className="flex-1 flex items-center justify-center gap-4">
+                        <Button
+                          className="flex-1"
+                          onClick={() => router.push("/login")}
+                        >
+                          Login to Generate Images
+                        </Button>
+                      </div>
+                    )}
+
+                    {isAuthenticated && !isStellarMode && (
                       <div className="flex-1 flex items-center justify-center gap-4">
                         <Button
                           className="flex-1"
@@ -611,7 +623,7 @@ export default function BananaPage() {
                       </div>
                     )}
 
-                    {isStellarMode && (
+                    {isAuthenticated && isStellarMode && (
                       <Button
                         variant="default"
                         onClick={handleGenerate}
