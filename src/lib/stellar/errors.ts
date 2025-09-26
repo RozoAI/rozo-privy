@@ -37,11 +37,13 @@ export const STELLAR_ERROR_MESSAGES: Record<string, string> = {
   change_trust_malformed: "Change trust operation is malformed",
   change_trust_no_issuer: "Asset issuer account does not exist",
   change_trust_invalid_limit: "Trust limit is invalid",
-  change_trust_low_reserve: "Account would go below minimum balance after creating trustline",
+  change_trust_low_reserve:
+    "Account would go below minimum balance after creating trustline",
   change_trust_self_not_allowed: "Cannot create trustline to self",
   change_trust_trust_line_missing: "Trustline does not exist",
   change_trust_cannot_delete: "Cannot delete trustline with non-zero balance",
-  change_trust_not_auth_maintain_liabilities: "Not authorized to maintain liabilities",
+  change_trust_not_auth_maintain_liabilities:
+    "Not authorized to maintain liabilities",
 };
 
 /**
@@ -60,7 +62,7 @@ export function getStellarErrorMessage(result: any): string {
     // Check for operation-level errors
     if (result.operations && Array.isArray(result.operations)) {
       for (const op of result.operations) {
-        if (op.result_code && op.result_code !== 'op_success') {
+        if (op.result_code && op.result_code !== "op_success") {
           const opError = STELLAR_ERROR_MESSAGES[op.result_code];
           if (opError) {
             return opError;
@@ -72,7 +74,7 @@ export function getStellarErrorMessage(result: any): string {
     // Check for extras with result_codes
     if (result.extras?.result_codes) {
       const codes = result.extras.result_codes;
-      
+
       // Transaction result code
       if (codes.transaction) {
         const txError = STELLAR_ERROR_MESSAGES[codes.transaction];
@@ -84,7 +86,7 @@ export function getStellarErrorMessage(result: any): string {
       // Operation result codes
       if (codes.operations && Array.isArray(codes.operations)) {
         for (const opCode of codes.operations) {
-          if (opCode !== 'op_success') {
+          if (opCode !== "op_success") {
             const opError = STELLAR_ERROR_MESSAGES[opCode];
             if (opError) {
               return opError;
@@ -118,8 +120,10 @@ export function isTrustlineAlreadyExists(result: any): boolean {
   try {
     const codes = result.extras?.result_codes;
     if (codes?.operations) {
-      return codes.operations.includes('change_trust_already_exists') ||
-             codes.operations.includes('op_line_full');
+      return (
+        codes.operations.includes("change_trust_already_exists") ||
+        codes.operations.includes("op_line_full")
+      );
     }
     return false;
   } catch {
@@ -134,12 +138,50 @@ export function isInsufficientBalance(result: any): boolean {
   try {
     const codes = result.extras?.result_codes;
     if (codes?.transaction) {
-      return codes.transaction === 'tx_insufficient_balance';
+      return codes.transaction === "tx_insufficient_balance";
     }
     if (codes?.operations) {
-      return codes.operations.includes('op_underfunded') ||
-             codes.operations.includes('change_trust_low_reserve');
+      return (
+        codes.operations.includes("op_underfunded") ||
+        codes.operations.includes("change_trust_low_reserve")
+      );
     }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if error is a 404 account not found error
+ */
+export function isAccountNotFound(error: any): boolean {
+  try {
+    // Check HTTP response status
+    if (error.response?.status === 404) {
+      return true;
+    }
+
+    // Check error message for 404 patterns
+    if (
+      error.message &&
+      (error.message.includes("404") ||
+        error.message.includes("not found") ||
+        error.message.includes("Resource Missing"))
+    ) {
+      return true;
+    }
+
+    // Check error type for Horizon's specific 404 type
+    if (error.type === "https://stellar.org/horizon-errors/not_found") {
+      return true;
+    }
+
+    // Check status field
+    if (error.status === 404) {
+      return true;
+    }
+
     return false;
   } catch {
     return false;

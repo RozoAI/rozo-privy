@@ -77,9 +77,9 @@ export default function UserDetail() {
         />
       )}
 
-      <ScanQRButton
-        disabled={!account?.balances || needsActivation || isAccountLoading}
-      />
+      {!needsActivation && (
+        <ScanQRButton disabled={!account?.balances || isAccountLoading} />
+      )}
 
       <InsufficientBalanceDialog
         open={showInsufficientBalanceDialog}

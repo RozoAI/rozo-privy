@@ -7,7 +7,7 @@ import type { Horizon } from "@stellar/stellar-sdk";
 import { useMemo } from "react";
 
 export function useStellarBalances(
-  account: Horizon.AccountResponse | undefined
+  account: Horizon.AccountResponse | undefined | null
 ) {
   const formattedBalances = useMemo(() => {
     if (!account?.balances) return [];

@@ -2,13 +2,15 @@ import type { Horizon } from "@stellar/stellar-sdk";
 import { useEffect, useMemo, useState } from "react";
 
 export function useStellarActivation(
-  account: Horizon.AccountResponse | undefined,
+  account: Horizon.AccountResponse | undefined | null,
   publicKey: string | undefined
 ) {
   const [isAccountLoading, setIsAccountLoading] = useState(false);
 
   useEffect(() => {
-    if (publicKey && !account) {
+    if (publicKey && account === undefined) {
+      // Only show loading when account is undefined (still fetching)
+      // Don't show loading when account is null (404 - not found)
       setIsAccountLoading(true);
     } else {
       setIsAccountLoading(false);
@@ -22,7 +24,8 @@ export function useStellarActivation(
     }
 
     // If we have a public key but no account data (and not loading), the wallet needs activation
-    if (publicKey && !account) {
+    // This includes both undefined (still loading) and null (404 - account doesn't exist)
+    if (publicKey && (account === undefined || account === null)) {
       return true;
     }
 

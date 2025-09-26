@@ -1,9 +1,18 @@
 "use client";
 
-import { StellarConfig } from '@/lib/stellar/config';
-import { Asset, BASE_FEE, Horizon, Networks, Operation, TransactionBuilder } from '@stellar/stellar-sdk';
-import type { ReactNode } from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { StellarConfig } from "@/lib/stellar/config";
+import { isAccountNotFound } from "@/lib/stellar/errors";
+import {
+  Asset,
+  BASE_FEE,
+  Horizon,
+  Networks,
+  Operation,
+  TransactionBuilder,
+} from "@stellar/stellar-sdk";
+import type { ReactNode } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type StellarContextProvider = { children: ReactNode; stellarRpcUrl?: string };
 
@@ -11,7 +20,7 @@ type StellarContextProviderValue = {
   server: Horizon.Server | undefined;
   publicKey: string | undefined;
   setPublicKey: (publicKey: string) => void;
-  account: Horizon.AccountResponse | undefined;
+  account: Horizon.AccountResponse | undefined | null;
   isConnected: boolean;
   disconnect: () => void;
   convertXlmToUsdc: (amount: string) => Promise<string>;
@@ -19,29 +28,33 @@ type StellarContextProviderValue = {
   refreshAccount: () => Promise<void>;
 };
 
-
 const initialContext = {
   server: undefined,
   publicKey: undefined,
-  setPublicKey: () => { },
+  setPublicKey: () => {},
   account: undefined,
   isConnected: false,
-  disconnect: () => { },
-  convertXlmToUsdc: () => Promise.resolve(''),
-  enableUsdcTrustline: () => Promise.resolve(''),
+  disconnect: () => {},
+  convertXlmToUsdc: () => Promise.resolve(""),
+  enableUsdcTrustline: () => Promise.resolve(""),
   refreshAccount: () => Promise.resolve(),
 };
 
-export const StellarContext = createContext<StellarContextProviderValue>(initialContext);
+export const StellarContext =
+  createContext<StellarContextProviderValue>(initialContext);
 
 export const StellarProvider = ({
   children,
   stellarRpcUrl,
 }: StellarContextProvider) => {
   const [publicKey, setPublicKey] = useState<string | undefined>(undefined);
-  const [accountInfo, setAccountInfo] = useState<Horizon.AccountResponse | undefined>(undefined);
+  const [accountInfo, setAccountInfo] = useState<
+    Horizon.AccountResponse | undefined | null
+  >(undefined);
 
-  const server = new Horizon.Server(stellarRpcUrl ?? StellarConfig.NETWORK.rpcUrl);
+  const server = new Horizon.Server(
+    stellarRpcUrl ?? StellarConfig.NETWORK.rpcUrl
+  );
 
   const getAccountInfo = async (publicKey: string) => {
     try {
@@ -49,7 +62,19 @@ export const StellarProvider = ({
 
       setAccountInfo(data);
     } catch (error: any) {
-      console.error(error);
+      // Handle 404 error specifically - account doesn't exist (not funded)
+      if (isAccountNotFound(error)) {
+        console.log(
+          `Account ${publicKey} not found - needs activation/funding`
+        );
+        // Set account info to null to indicate unfunded account
+        setAccountInfo(null);
+        return;
+      }
+
+      // For other errors, show toast and log
+      toast.error(error.message || "Failed to get account info");
+      console.error("Error loading account:", error);
     }
   };
 
@@ -78,17 +103,20 @@ export const StellarProvider = ({
 
   const enableUsdcTrustline = async (): Promise<string> => {
     if (!publicKey) {
-      throw new Error('No account connected');
+      throw new Error("No account connected");
     }
 
     try {
       // Refresh account info to get latest sequence number
       const freshAccount = await server.loadAccount(publicKey);
-      
+
       // Create changeTrust operation for USDC
       const changeTrustOp = Operation.changeTrust({
-        asset: new Asset(StellarConfig.USDC_ASSET.code, StellarConfig.USDC_ASSET.issuer),
-        limit: '922337203685.4775807', // Maximum limit
+        asset: new Asset(
+          StellarConfig.USDC_ASSET.code,
+          StellarConfig.USDC_ASSET.issuer
+        ),
+        limit: "922337203685.4775807", // Maximum limit
       });
 
       // Build transaction with fresh account data
@@ -103,7 +131,14 @@ export const StellarProvider = ({
       // Return the transaction XDR for signing
       return transaction.toXDR();
     } catch (error: any) {
-      console.error('Error creating trustline transaction:', error);
+      // Handle 404 error specifically - account doesn't exist (not funded)
+      if (isAccountNotFound(error)) {
+        throw new Error(
+          "Account needs to be activated before enabling USDC trustline. Please fund your account with XLM first."
+        );
+      }
+
+      console.error("Error creating trustline transaction:", error);
       throw error;
     }
   };
@@ -125,7 +160,7 @@ export const StellarProvider = ({
 
   useEffect(() => {
     if (publicKey) {
-      refreshAccount()
+      refreshAccount();
     }
   }, [publicKey]);
 
