@@ -60,6 +60,18 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
     );
   };
 
+  const getDestinationAddress = (data: DeeplinkData): string => {
+    if (data.type === "stellar") {
+      return (
+        (data as StellarParseResult).toStellarAddress || data.address || ""
+      );
+    }
+    if (isBlockchainData(data)) {
+      return data.address || "";
+    }
+    return "";
+  };
+
   const hasAmount =
     parsedData && isBlockchainData(parsedData)
       ? parsedData.amount !== undefined
@@ -200,7 +212,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
             currency: "USD",
           },
           destination: {
-            destinationAddress: destinationAddress,
+            destinationAddress: getDestinationAddress(parsedData),
             chainId: chainId,
             amountUnits: hasAmount ? String(Number(amount) || 0) : amount,
             tokenSymbol: "USDC",
@@ -279,10 +291,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
                     Recipient Address
                   </label>
                   <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:text-white rounded-lg break-all text-sm">
-                    {parsedData.type === "stellar"
-                      ? (parsedData as StellarParseResult).toStellarAddress ||
-                        parsedData.address
-                      : parsedData.address}
+                    {getDestinationAddress(parsedData)}
                   </div>
                   <div className="text-xs text-gray-500">
                     {parsedData.type === "stellar"
@@ -410,7 +419,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
               <div className="flex justify-between items-start">
                 <span className="text-sm font-medium text-gray-700">To:</span>
                 <span className="text-sm text-right break-all max-w-[200px]">
-                  {isBlockchainData(parsedData) ? parsedData.address : ""}
+                  {getDestinationAddress(parsedData)}
                 </span>
               </div>
 
