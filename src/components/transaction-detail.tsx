@@ -186,6 +186,12 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
             ? String(rozoStellarUSDC.chainId)
             : String(baseUSDC.chainId);
 
+        const destinationAddress =
+          parsedData.type === "stellar"
+            ? (parsedData as StellarParseResult).toStellarAddress ||
+              parsedData.address
+            : parsedData.address ?? "";
+
         const payload: any = {
           appId: "rozoPrivy",
           display: {
@@ -194,7 +200,7 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
             currency: "USD",
           },
           destination: {
-            destinationAddress: parsedData.address ?? "",
+            destinationAddress: destinationAddress,
             chainId: chainId,
             amountUnits: hasAmount ? String(Number(amount) || 0) : amount,
             tokenSymbol: "USDC",
