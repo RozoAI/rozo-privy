@@ -3,7 +3,7 @@
 import { useStellarBalances } from "@/hooks/use-stellar-balances";
 import { useStellarTransfer } from "@/hooks/use-stellar-transfer";
 import { useStellarWallet } from "@/hooks/use-stellar-wallet";
-import { type DeeplinkData } from "@rozoai/deeplink-core";
+import { StellarParseResult, type DeeplinkData } from "@rozoai/deeplink-core";
 import { rozoStellarUSDC } from "@rozoai/intent-common";
 import { useRouter } from "next/navigation";
 import {
@@ -273,7 +273,10 @@ const TransactionDetail = forwardRef<TransactionDetailRef>((props, ref) => {
                     Recipient Address
                   </label>
                   <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:text-white rounded-lg break-all text-sm">
-                    {parsedData.address}
+                    {parsedData.type === "stellar"
+                      ? (parsedData as StellarParseResult).toStellarAddress ||
+                        parsedData.address
+                      : parsedData.address}
                   </div>
                   <div className="text-xs text-gray-500">
                     {parsedData.type === "stellar"
