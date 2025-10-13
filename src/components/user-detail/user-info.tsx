@@ -1,4 +1,5 @@
 import type { User } from "@privy-io/react-auth";
+import { LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import { memo, type ReactNode } from "react";
@@ -40,7 +41,13 @@ export const UserInfo = memo(function UserInfo({
               {user?.email?.address}
             </p>
           </div>
-          <Button variant="outline" onClick={onLogout}>
+          <Button
+            variant="link"
+            size="sm"
+            onClick={onLogout}
+            className="text-destructive"
+          >
+            <LogOut className="size-3" />
             Logout
           </Button>
         </div>

@@ -1,4 +1,5 @@
 import BoxedCard from "@/components/boxed-card";
+import { FabActions } from "@/components/fab-actions";
 import { CardContent } from "@/components/ui/card";
 import UserDetail from "@/components/user-detail";
 import { createPrivyClient } from "@/lib/privy";
@@ -21,10 +22,13 @@ export default async function Profile() {
   }
 
   return (
-    <BoxedCard className="flex-1">
-      <CardContent className="m-auto w-full">
-        <UserDetail />
-      </CardContent>
-    </BoxedCard>
+    <>
+      <BoxedCard className="flex-1 m-auto">
+        <CardContent className="m-auto w-full">
+          <UserDetail />
+        </CardContent>
+      </BoxedCard>
+      <FabActions className="bottom-20" />
+    </>
   );
 }
