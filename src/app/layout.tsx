@@ -42,7 +42,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <main className="flex min-h-screen flex-col justify-between gap-4 md:min-h-screen md:items-center md:justify-center">
+          <main className="flex min-h-screen flex-col justify-between gap-4">
             <PrivyProvider>
               <StellarProvider>{children}</StellarProvider>
             </PrivyProvider>

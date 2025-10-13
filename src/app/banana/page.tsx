@@ -492,7 +492,7 @@ export default function BananaPage() {
             onOrderChange={setTransformations}
           />
         ) : (
-          <div className="container mx-auto p-4 md:p-8 animate-fade-in">
+          <div className="container mx-auto p-4 md:p-0 animate-fade-in">
             <div className="mb-4">
               <Button onClick={handleBackToSelection} variant="secondary">
                 <ArrowLeft className="size-4" />
